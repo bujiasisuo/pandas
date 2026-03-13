@@ -81,7 +81,7 @@ __pycache__
 monkeytype.sqlite3
 # meson editable install folder
 .mesonpy
-
+.history/
 
 # OS generated files #
 ######################
