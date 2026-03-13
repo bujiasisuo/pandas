@@ -374,6 +374,53 @@ class TestDataFramePlots:
             assert target_label == pprint_thing(["group"])
         mpl.pyplot.close()
 
+    @pytest.mark.parametrize("vert", [True, False])
+    def test_boxplot_sharey_tick_labels(self, vert):
+        # GH#XXXXX: Test that tick labels are correctly handled when sharey=True
+        df = DataFrame(
+            {
+                "a": np.random.default_rng(2).standard_normal(100),
+                "b": np.random.default_rng(2).standard_normal(100),
+                "c": np.random.default_rng(2).standard_normal(100),
+                "group": np.random.default_rng(2).choice(["X", "Y", "Z"], 100),
+            }
+        )
+        axes = df.boxplot(column=["a", "b", "c"], by="group", vert=vert)
+        assert isinstance(axes, np.ndarray)
+
+        for ax in axes.flat:
+            if ax is not None:
+                xticks = ax.get_xticks()
+                if vert:
+                    assert len(xticks) > 0
+                else:
+                    yticks = ax.get_yticks()
+                    assert len(yticks) > 0
+        mpl.pyplot.close()
+
+    @pytest.mark.parametrize("vert", [True, False])
+    def test_boxplot_groupby_sharey_tick_labels(self, vert):
+        # GH#XXXXX: Test that tick labels are correctly handled with groupby boxplot
+        df = DataFrame(
+            {
+                "a": np.random.default_rng(2).standard_normal(100),
+                "b": np.random.default_rng(2).standard_normal(100),
+                "group": np.random.default_rng(2).choice(["X", "Y"], 100),
+            }
+        )
+        result = df.groupby("group").boxplot(subplots=True, sharey=True, vert=vert)
+        assert isinstance(result, Series)
+
+        for key, ax in result.items():
+            assert ax is not None
+            if vert:
+                xticks = ax.get_xticks()
+                assert len(xticks) > 0
+            else:
+                yticks = ax.get_yticks()
+                assert len(yticks) > 0
+        mpl.pyplot.close()
+
 
 class TestDataFrameGroupByPlots:
     def test_boxplot_legacy1(self, hist_df):

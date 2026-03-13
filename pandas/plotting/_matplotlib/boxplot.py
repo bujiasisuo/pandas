@@ -217,6 +217,12 @@ class BoxPlot(LinePlot):
         else:
             ax.set_yticklabels(labels)
 
+    def _get_ax_layer(self, ax: Axes, primary: bool = True) -> Axes:
+        """Get the primary or secondary axis layer."""
+        if primary:
+            return ax
+        return getattr(ax, "right_ax", ax) if hasattr(ax, "right_ax") else ax
+
     def _make_legend(self) -> None:
         pass
 
@@ -261,10 +267,17 @@ def _grouped_plot_by_column(
             by = [by]
         columns = data._get_numeric_data().columns.difference(by)
     naxes = len(columns)
+
+    # GH#XXXXX: When vert=False and sharey=True, we need to handle
+    # tick labels carefully to avoid label overlap
+    sharex = kwargs.pop("sharex", True)
+    sharey = kwargs.pop("sharey", True)
+    vert = kwargs.get("vert", True)
+
     fig, axes = create_subplots(
         naxes=naxes,
-        sharex=kwargs.pop("sharex", True),
-        sharey=kwargs.pop("sharey", True),
+        sharex=sharex,
+        sharey=sharey,
         figsize=figsize,
         ax=ax,
         layout=layout,
@@ -274,7 +287,7 @@ def _grouped_plot_by_column(
 
     # GH 45465: move the "by" label based on "vert"
     xlabel, ylabel = kwargs.pop("xlabel", None), kwargs.pop("ylabel", None)
-    if kwargs.get("vert", True):
+    if vert:
         xlabel = xlabel or by
     else:
         ylabel = ylabel or by
