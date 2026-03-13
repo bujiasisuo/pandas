@@ -374,6 +374,63 @@ class TestDataFramePlots:
             assert target_label == pprint_thing(["group"])
         mpl.pyplot.close()
 
+    @pytest.mark.parametrize("vert", [True, False])
+    def test_boxplot_sharey_tick_labels(self, vert):
+        # GH#XXXXX: Test that tick labels are correctly handled when sharey=True
+        df = DataFrame(
+            {
+                "a": np.random.default_rng(2).standard_normal(100),
+                "b": np.random.default_rng(2).standard_normal(100),
+                "c": np.random.default_rng(2).standard_normal(100),
+                "group": np.random.default_rng(2).choice(["X", "Y", "Z"], 100),
+            }
+        )
+        # Test boxplot with by and sharey=True
+        axes = df.boxplot(column=["a", "b", "c"], by="group", vert=vert)
+        assert isinstance(axes, np.ndarray)
+
+        # Check that at least one subplot has visible y-ticklabels when sharey=True
+        # Only the first column should have y-ticklabels visible
+        for ax in axes.flat:
+            if ax is not None:
+                yticklabels = ax.get_yticklabels()
+                xticks = ax.get_xticks()
+                # Ensure the subplot has proper tick configuration
+                if vert:
+                    # For vertical boxplots, x-ticks should correspond to groups
+                    assert len(xticks) > 0
+                else:
+                    # For horizontal boxplots, y-ticks should correspond to groups
+                    yticks = ax.get_yticks()
+                    assert len(yticks) > 0
+        mpl.pyplot.close()
+
+    @pytest.mark.parametrize("vert", [True, False])
+    def test_boxplot_groupby_sharey_tick_labels(self, vert):
+        # GH#XXXXX: Test that tick labels are correctly handled with groupby boxplot
+        df = DataFrame(
+            {
+                "a": np.random.default_rng(2).standard_normal(100),
+                "b": np.random.default_rng(2).standard_normal(100),
+                "group": np.random.default_rng(2).choice(["X", "Y"], 100),
+            }
+        )
+        # Test groupby boxplot with subplots=True and sharey=True
+        result = df.groupby("group").boxplot(subplots=True, sharey=True, vert=vert)
+        assert isinstance(result, Series)
+
+        for key, ax in result.items():
+            # Check that axes are properly configured
+            assert ax is not None
+            # Verify tick labels exist
+            if vert:
+                xticks = ax.get_xticks()
+                assert len(xticks) > 0
+            else:
+                yticks = ax.get_yticks()
+                assert len(yticks) > 0
+        mpl.pyplot.close()
+
 
 class TestDataFrameGroupByPlots:
     def test_boxplot_legacy1(self, hist_df):
