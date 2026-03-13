@@ -113,7 +113,6 @@ class BoxPlot(LinePlot):
                         )
         else:
             self.color = None
-
         # get standard colors for default
         colors = get_standard_colors(num_colors=3, colormap=self.colormap, color=None)
         # use 2 colors by default, for box/whisker and median
@@ -123,7 +122,6 @@ class BoxPlot(LinePlot):
         self._whiskers_c = colors[0]
         self._medians_c = colors[2]
         self._caps_c = colors[0]
-
     def _get_colors(
         self,
         num_colors=None,
